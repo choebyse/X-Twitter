@@ -16,6 +16,12 @@ const Column = styled.div`
   &:last-child {
     place-self: end;
   }
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* 자동 확장 */
+  min-width: 0; /* 너무 길어지는 것 방지 */
+  overflow-wrap: break-word; /* 긴 단어도 줄바꿈 */
+  word-break: break-word; /* 단어 단위로 줄바꿈 */
 `;
 const Photo = styled.img`
   width: 100px;
@@ -59,6 +65,18 @@ const ButtonContainer = styled.div`
   flex-direction: column;
   gap: 5px;
 `;
+const TextArea = styled.textarea`
+  width: 100%;
+  height: auto;
+  font-size: 18px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: white;
+  resize: none;
+  padding: 5px;
+  font-family: inherit;
+`;
 
 export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
   const user = auth.currentUser;
@@ -92,17 +110,25 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
     }
   };
 
+  const onCancel = async () => {
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditedTweet(e.target.value);
+    e.target.style.height = "auto"; // 높이를 초기화한 후
+    e.target.style.height = `${e.target.scrollHeight}px`; // 내용에 맞게 조절
+  };
+
   return (
     <Wrapper>
       <Column>
         <Username>{username}</Username>
         {isEditing ? (
           <>
-            <textarea
-              value={editedTweet}
-              onChange={(e) => setEditedTweet(e.target.value)}
-            />
+            <TextArea value={editedTweet} onChange={handleInputChange} />
             <button onClick={onEdit}>Save</button>
+            <button onClick={onCancel}>Cancel</button>
           </>
         ) : (
           <Payload>{tweet}</Payload>

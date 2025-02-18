@@ -17,6 +17,7 @@ const Menu = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  border-right: 1px solid rgb(47, 51, 54);
 `;
 
 const MenuItem = styled.div`
