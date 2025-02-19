@@ -43,17 +43,49 @@ const AvatarInput = styled.input`
 const Name = styled.span`
   font-size: 22px;
 `;
+const EditButton = styled.span`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  width: 15px;
+  svg {
+    width: 15px;
+    opacity: 0.5;
+  }
+`;
 const Tweets = styled.div`
   display: flex;
   width: 100%;
   flex-direction: column;
   gap: 10px;
 `;
+const Nickname = styled.div`
+  display: flex;
+  gap: 5px;
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  height: auto;
+  font-size: 18px;
+  outline: none;
+  background: transparent;
+  color: white;
+  resize: none;
+  padding: 5px;
+  font-family: inherit;
+`;
 
 export default function Profile() {
   const user = auth.currentUser;
   const [avatar, setAvatar] = useState(user?.photoURL);
   const [tweets, setTweets] = useState<ITweet[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(
+    user?.displayName ?? "Anonymous"
+  );
   const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     if (!user) return;
@@ -76,7 +108,9 @@ export default function Profile() {
       orderBy("createdAt", "desc"),
       limit(25)
     );
+
     const snapshot = await getDocs(tweetQuery);
+
     const tweets = snapshot.docs.map((doc) => {
       const { tweet, createdAt, userId, username, photo } = doc.data();
       return {
@@ -93,6 +127,26 @@ export default function Profile() {
   useEffect(() => {
     fetchTweets();
   }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditedName(e.target.value);
+  };
+
+  const onEdit = async () => {
+    if (auth.currentUser) {
+      try {
+        await updateProfile(auth.currentUser, {
+          displayName: editedName,
+        });
+        setIsEditing(false);
+      } catch (error) {
+        console.error("username変更失敗:", error);
+      }
+    } else {
+      console.log("ログインしていない");
+    }
+  };
+
   return (
     <Wrapper>
       <AvatarUpload htmlFor="avatar">
@@ -115,7 +169,32 @@ export default function Profile() {
         type="file"
         accept="image/*"
       />
-      <Name>{user?.displayName ?? "Anonymous"}</Name>
+      <Nickname>
+        {isEditing ? (
+          <>
+            <TextArea value={editedName} onChange={handleInputChange} />
+            <button onClick={onEdit}>Save</button>
+          </>
+        ) : (
+          <Name>{editedName}</Name>
+        )}
+        <EditButton onClick={() => setIsEditing(true)}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+            />
+          </svg>
+        </EditButton>
+      </Nickname>
       <Tweets>
         {tweets.map((tweet) => (
           <Tweet key={tweet.id} {...tweet} />

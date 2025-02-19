@@ -116,8 +116,8 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setEditedTweet(e.target.value);
-    e.target.style.height = "auto"; // 높이를 초기화한 후
-    e.target.style.height = `${e.target.scrollHeight}px`; // 내용에 맞게 조절
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   return (
