@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const Wrapper = styled.div`
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 1fr 9fr;
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 15px;
@@ -18,10 +18,10 @@ const Column = styled.div`
   }
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* 자동 확장 */
-  min-width: 0; /* 너무 길어지는 것 방지 */
-  overflow-wrap: break-word; /* 긴 단어도 줄바꿈 */
-  word-break: break-word; /* 단어 단위로 줄바꿈 */
+  flex-grow: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 `;
 const Photo = styled.img`
   width: 100px;
@@ -77,8 +77,18 @@ const TextArea = styled.textarea`
   padding: 5px;
   font-family: inherit;
 `;
+const AvatarImg = styled.img`
+  width: 60%;
+`;
 
-export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
+export default function Tweet({
+  username,
+  photo,
+  tweet,
+  userId,
+  id,
+  avatar,
+}: ITweet) {
   const user = auth.currentUser;
   const [isEditing, setIsEditing] = useState(false);
   const [editedTweet, setEditedTweet] = useState(tweet);
@@ -122,6 +132,7 @@ export default function Tweet({ username, photo, tweet, userId, id }: ITweet) {
 
   return (
     <Wrapper>
+      <AvatarImg src={avatar || "/default-avatar.png"} />
       <Column>
         <Username>{username}</Username>
         {isEditing ? (
