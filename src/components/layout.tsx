@@ -69,6 +69,7 @@ export default function Layout() {
             </svg>
           </MenuItem>
         </Link>
+
         <Link to="/profile">
           <MenuItem>
             <svg
@@ -81,6 +82,7 @@ export default function Layout() {
             </svg>
           </MenuItem>
         </Link>
+
         <MenuItem onClick={onLogOut} className="log-out">
           <svg
             fill="currentColor"

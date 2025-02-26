@@ -3,7 +3,7 @@ import { ITweet } from "./timeline";
 import { auth, db, storage } from "../firebase";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Wrapper = styled.div`
   display: grid;
@@ -36,34 +36,43 @@ const Payload = styled.p`
   margin: 10px 0px;
   font-size: 18px;
 `;
-const DeleteButton = styled.button`
-  background-color: tomato;
-  color: white;
-  font-weight: 600;
-  border: 0;
-  font-size: 10px;
-  padding: 5px 10px;
-  text-transform: uppercase;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 60px;
+
+const MoreButtonContainer = styled.div`
+  position: relative; /* Dropdown 위치 기준 */
 `;
-const EditButton = styled.button`
-  background-color: gray;
-  color: white;
-  font-weight: 600;
-  border: 0;
-  font-size: 10px;
-  padding: 5px 10px;
-  text-transform: uppercase;
-  border-radius: 5px;
+
+const MoreButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 20px;
   cursor: pointer;
-  width: 60px;
+  color: white;
+  position: relative;
 `;
-const ButtonContainer = styled.div`
+const Dropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 5px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+`;
+const DropdownItem = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  padding: 10px;
+  width: 100px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: #555;
+  }
 `;
 const TextArea = styled.textarea`
   width: 100%;
@@ -81,6 +90,14 @@ const AvatarImg = styled.img`
   width: 60%;
 `;
 
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  posituin: relative;
+`;
+
 export default function Tweet({
   username,
   photo,
@@ -92,6 +109,8 @@ export default function Tweet({
   const user = auth.currentUser;
   const [isEditing, setIsEditing] = useState(false);
   const [editedTweet, setEditedTweet] = useState(tweet);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const onDelete = async () => {
     const ok = confirm("Are you sure you want to delete this tweet?");
@@ -130,11 +149,59 @@ export default function Tweet({
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
+  const handleMoreClick = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setShowDropdown(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <Wrapper>
-      <AvatarImg src={avatar || "/default-avatar.png"} />
+      {avatar ? (
+        <AvatarImg src={avatar} />
+      ) : (
+        <svg
+          width="60%"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+        </svg>
+      )}
+
       <Column>
-        <Username>{username}</Username>
+        <Header>
+          <Username>{username}</Username>
+          {user?.uid === userId && (
+            <MoreButtonContainer>
+              <MoreButton onClick={handleMoreClick}>⋮</MoreButton>
+              {showDropdown && (
+                <Dropdown ref={dropdownRef}>
+                  <DropdownItem onClick={() => setIsEditing(true)}>
+                    Edit
+                  </DropdownItem>
+                  <DropdownItem onClick={onDelete}>Delete</DropdownItem>
+                </Dropdown>
+              )}
+            </MoreButtonContainer>
+          )}
+        </Header>
         {isEditing ? (
           <>
             <TextArea value={editedTweet} onChange={handleInputChange} />
@@ -143,12 +210,6 @@ export default function Tweet({
           </>
         ) : (
           <Payload>{tweet}</Payload>
-        )}
-        {user?.uid === userId && (
-          <ButtonContainer>
-            <DeleteButton onClick={onDelete}>Delete</DeleteButton>
-            <EditButton onClick={() => setIsEditing(true)}>Edit</EditButton>
-          </ButtonContainer>
         )}
       </Column>
       <Column>{photo ? <Photo src={photo} /> : null}</Column>
