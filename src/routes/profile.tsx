@@ -92,7 +92,11 @@ export default function Profile() {
     if (files && files.length === 1) {
       const file = files[0];
       const locationRef = ref(storage, `avatars/${user?.uid}`);
+      console.log(locationRef);
+
+      console.log(file);
       const result = await uploadBytes(locationRef, file);
+      console.log(3);
       const avatarUrl = await getDownloadURL(result.ref);
       setAvatar(avatarUrl);
       await updateProfile(user, {

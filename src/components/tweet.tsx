@@ -7,26 +7,25 @@ import { useEffect, useRef, useState } from "react";
 
 const Wrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 9fr;
+  grid-template-columns: 1fr 15fr;
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 15px;
 `;
 const Column = styled.div`
-  &:last-child {
-    place-self: end;
-  }
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   min-width: 0;
   overflow-wrap: break-word;
   word-break: break-word;
+  margin: 0px 0px 0px 8px;
 `;
 const Photo = styled.img`
   width: 100px;
   height: 100px;
   border-radius: 15px;
+  object-fit: cover;
 `;
 const Username = styled.span`
   font-weight: 600;
@@ -38,7 +37,7 @@ const Payload = styled.p`
 `;
 
 const MoreButtonContainer = styled.div`
-  position: relative; /* Dropdown 위치 기준 */
+  position: relative;
 `;
 
 const MoreButton = styled.button`
@@ -87,7 +86,8 @@ const TextArea = styled.textarea`
   font-family: inherit;
 `;
 const AvatarImg = styled.img`
-  width: 60%;
+  width: 100%;
+  margin: 0px 8px 0px 0px;
 `;
 
 const Header = styled.div`
@@ -96,6 +96,41 @@ const Header = styled.div`
   align-items: center;
   width: 100%;
   posituin: relative;
+`;
+
+const EditContainer = styled.div`
+  position: relative;
+  padding-bottom: 30px;
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  margin: 5px 0px;
+`;
+
+const StyledTextArea = styled(TextArea)`
+  padding-bottom: 40px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+`;
+
+const ButtonContainer = styled.div`
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  display: flex;
+  gap: 8px;
+`;
+
+const StyledButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 5px 10px;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.8);
+  }
 `;
 
 export default function Tweet({
@@ -149,10 +184,12 @@ export default function Tweet({
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
+  /** Editドロップダウンボタン生成 */
   const handleMoreClick = () => {
     setShowDropdown(!showDropdown);
   };
 
+  /** ドロップダウンボタンクローズ判定 */
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
@@ -184,7 +221,6 @@ export default function Tweet({
           <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
         </svg>
       )}
-
       <Column>
         <Header>
           <Username>{username}</Username>
@@ -203,16 +239,18 @@ export default function Tweet({
           )}
         </Header>
         {isEditing ? (
-          <>
-            <TextArea value={editedTweet} onChange={handleInputChange} />
-            <button onClick={onEdit}>Save</button>
-            <button onClick={onCancel}>Cancel</button>
-          </>
+          <EditContainer>
+            <StyledTextArea value={editedTweet} onChange={handleInputChange} />
+            <ButtonContainer>
+              <StyledButton onClick={onEdit}>Save</StyledButton>
+              <StyledButton onClick={onCancel}>Cancel</StyledButton>
+            </ButtonContainer>
+          </EditContainer>
         ) : (
           <Payload>{tweet}</Payload>
         )}
+        <Column>{photo ? <Photo src={photo} /> : null}</Column>
       </Column>
-      <Column>{photo ? <Photo src={photo} /> : null}</Column>
     </Wrapper>
   );
 }
